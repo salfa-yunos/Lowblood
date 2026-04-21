@@ -1,568 +1,719 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🩸 Blood Donor Post Generator</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--red:#E01020;--gold:#FFD700;--bg:#0d0d0d;--card:#161616;--border:#2a2a2a;--white:#fff;--gray:#999;--light:#1e1e1e}
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--white);font-family:'Barlow',sans-serif;min-height:100vh}
-header{background:var(--red);padding:14px 20px;display:flex;align-items:center;gap:12px;border-bottom:3px solid var(--gold)}
-header h1{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px}
-header .tagline{font-size:11px;color:rgba(255,255,255,.7);letter-spacing:2px;text-transform:uppercase;margin-left:auto}
-.app{display:grid;grid-template-columns:340px 1fr;min-height:calc(100vh - 59px)}
-@media(max-width:760px){.app{grid-template-columns:1fr}}
-.sidebar{background:var(--card);border-right:1px solid var(--border);padding:24px 18px;overflow-y:auto}
-.sec-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;margin:22px 0 10px}
-.sec-label:first-child{margin-top:0}
-.bt-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
-.bt-btn{background:var(--light);border:2px solid var(--border);border-radius:9px;padding:10px 4px 7px;text-align:center;cursor:pointer;transition:.18s all;position:relative}
-.bt-btn:hover{border-color:#555;transform:translateY(-2px)}
-.bt-btn.sel{border-color:var(--red);background:rgba(224,16,32,.13)}
-.bt-btn.sel.crit{border-color:var(--gold);background:rgba(255,215,0,.08)}
-.bt-type{font-family:'Bebas Neue',sans-serif;font-size:26px;line-height:1;color:var(--red)}
-.bt-btn.crit .bt-type{color:var(--gold)}
-.bt-tag{font-size:9px;letter-spacing:1px;color:var(--gray);text-transform:uppercase;margin-top:2px}
-.dot{position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%}
-.dot-c{background:var(--gold)}.dot-u{background:var(--red)}.dot-n{background:#444}
-.reason-box{background:var(--light);border:1px solid var(--border);border-radius:10px;padding:14px;margin-top:10px;min-height:80px}
-.reason-box .rb-type{font-family:'Bebas Neue',sans-serif;font-size:38px;color:var(--red);line-height:1}
-.reason-box.crit .rb-type{color:var(--gold)}
-.pill{display:inline-block;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:10px;letter-spacing:2px;padding:3px 10px;border-radius:20px;margin:4px 0 7px}
-.pill-c{background:rgba(255,215,0,.12);color:var(--gold);border:1px solid rgba(255,215,0,.35)}
-.pill-u{background:rgba(224,16,32,.12);color:#ff6060;border:1px solid rgba(224,16,32,.35)}
-.pill-n{background:#222;color:var(--gray);border:1px solid #333}
-.rb-reason{font-size:12px;color:#bbb;line-height:1.5}
-.rb-donate{font-size:11px;color:#666;margin-top:6px;line-height:1.5}
-.fmt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.fmt-btn{background:var(--light);border:2px solid var(--border);border-radius:9px;padding:10px 6px;cursor:pointer;transition:.18s;text-align:center}
-.fmt-btn:hover{border-color:#555}
-.fmt-btn.sel{border-color:var(--gold);background:rgba(255,215,0,.06)}
-.fmt-icon{margin:0 auto 6px;background:#222;border-radius:4px;border:1px solid #333}
-.fmt-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px}
-.fmt-sub{font-size:10px;color:var(--gray)}
-.gen-btn{width:100%;background:var(--red);color:#fff;border:none;border-radius:10px;padding:15px;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;cursor:pointer;transition:.2s;margin-top:18px;position:relative;overflow:hidden}
-.gen-btn:hover:not(:disabled){background:#ff1a2e}
-.gen-btn:disabled{opacity:.45;cursor:not-allowed}
-.pbar{position:absolute;bottom:0;left:0;height:4px;background:var(--gold);transition:width .15s;width:0}
-.preview-area{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 16px;gap:16px;background:repeating-conic-gradient(#181818 0% 25%,#131313 0% 50%) 0 0/18px 18px}
-.prev-wrap{border:2px solid var(--border);border-radius:4px;overflow:hidden;box-shadow:0 16px 50px rgba(0,0,0,.7)}
-#previewCanvas{display:block;max-width:100%;max-height:58vh}
-.prev-label{font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:3px;color:#555;text-transform:uppercase}
-.status{font-family:'Barlow Condensed',sans-serif;font-size:15px;letter-spacing:2px;color:var(--gray);text-align:center;min-height:22px}
-.dl-btn{background:var(--gold);color:#000;border:none;border-radius:8px;padding:12px 30px;font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:2px;cursor:pointer;transition:.15s;display:none}
-.dl-btn:hover{background:#ffe840;transform:scale(1.04)}
+:root {
+  --red:      #B71C1C;
+  --red-deep: #1a0a0a;
+  --red-mid:  #2a1010;
+  --red-edge: #3a1818;
+  --gold:     #FFD700;
+  --gold-dim: #7a3300;
+  --critical: #EF5350;
+  --low:      #FF7043;
+  --adequate: #8D6E63;
+  --good:     #4CAF50;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #0d0d0d;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 10px 28px;
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+  min-height: 100vh;
+}
+
+/* ═══ EDITOR ═══════════════════════════════ */
+.editor-panel {
+width: 100%; max-width: 420px;
+background: #181818; border: 1px solid #2a2a2a;
+border-radius: 14px; padding: 14px; margin-bottom: 12px;
+}
+.editor-panel h3 { font-size: 11px; font-weight: 700; color: var(–gold); margin-bottom: 12px; letter-spacing: 1.5px; text-transform: uppercase; }
+.mode-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+.mode-tab { flex:1; padding:8px 4px; font-size:12px; font-weight:700; border-radius:8px; border:1.5px solid #333; cursor:pointer; background:#1e1e1e; color:#888; transition:all 0.2s; text-align:center; }
+.mode-tab.active { background:var(–red); border-color:var(–red); color:#fff; }
+
+/* subtype picker row */
+.subtype-picker { display:none; flex-wrap:wrap; gap:7px; margin-bottom:10px; }
+.subtype-picker.visible { display:flex; }
+.stype-btn {
+padding:7px 13px; font-size:14px; font-weight:800;
+border-radius:8px; border:2px solid #3a1818;
+background:var(–red-mid); color:#ddd; cursor:pointer;
+transition:all 0.18s; font-family:‘Bebas Neue’,sans-serif; letter-spacing:1px;
+}
+.stype-btn.selected { background:var(–red); border-color:var(–critical); color:#fff; }
+
+.toggle-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+.toggle-row label { font-size:12px; color:#aaa; font-weight:600; }
+.toggle-switch { position:relative; width:38px; height:22px; cursor:pointer; }
+.toggle-switch input { opacity:0; width:0; height:0; }
+.toggle-track { position:absolute; inset:0; background:#444; border-radius:11px; transition:background 0.2s; }
+.toggle-switch input:checked + .toggle-track { background:var(–red); }
+.toggle-thumb { position:absolute; top:3px; left:3px; width:16px; height:16px; background:#fff; border-radius:50%; transition:left 0.2s; pointer-events:none; }
+.toggle-switch input:checked ~ .toggle-thumb { left:19px; }
+.editor-row { display:flex; align-items:flex-start; gap:8px; margin-bottom:8px; }
+.editor-row label { font-size:11px; color:#777; font-weight:700; min-width:52px; padding-top:8px; text-transform:uppercase; letter-spacing:0.5px; }
+.editor-row input, .editor-row textarea {
+flex:1; background:#222; border:1px solid #333; border-radius:8px;
+color:#fff; font-size:13px; padding:7px 10px; outline:none; font-family:inherit; resize:vertical;
+}
+.editor-row textarea { min-height:54px; line-height:1.45; }
+.editor-row input:focus, .editor-row textarea:focus { border-color:var(–red); }
+
+/* ═══ FORMAT BAR ═════════════════════════ */
+.format-bar { display:flex; gap:8px; margin-bottom:12px; justify-content:center; }
+.fmt-btn { padding:8px 16px; font-size:12px; font-weight:700; border-radius:20px; border:2px solid #333; cursor:pointer; background:#1a1a1a; color:#fff; transition:all 0.2s; white-space:nowrap; }
+.fmt-btn.active { background:var(–red); border-color:var(–red); }
+
+/* ═══ POSTER ════════════════════════════ */
+.poster-wrap { width:100%; max-width:420px; }
+.poster { background:var(–red-deep); color:#fff; border-radius:16px; overflow:hidden; width:100%; position:relative; }
+.poster.square { aspect-ratio:1/1; overflow:hidden; }
+.poster.square .poster-inner { position:absolute; top:0; left:0; width:100%; transform-origin:top left; }
+.poster.portrait .poster-inner { position:static; width:100%; }
+
+/* ═══ KEYFRAMES ══════════════════════════ */
+@keyframes fadeDown  { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeUp    { from{opacity:0;transform:translateY(14px)}  to{opacity:1;transform:translateY(0)} }
+@keyframes scaleIn   { from{opacity:0;transform:scale(0.8)}        to{opacity:1;transform:scale(1)} }
+@keyframes badgePop  { 0%{transform:scale(0.4);opacity:0} 70%{transform:scale(1.18)} 100%{transform:scale(1);opacity:1} }
+@keyframes fadeIn    { from{opacity:0} to{opacity:1} }
+@keyframes ticker    { 0%{transform:translateX(100%)} 100%{transform:translateX(-100%)} }
+@keyframes shimmer   { 0%{background-position:-200% center} 100%{background-position:200% center} }
+@keyframes heartbeat { 0%,100%{transform:scale(1)} 14%{transform:scale(1.2)} 28%{transform:scale(1)} 42%{transform:scale(1.12)} 56%{transform:scale(1)} }
+@keyframes dropIn    { 0%{transform:translateY(-20px) scale(0.75);opacity:0} 65%{transform:translateY(4px) scale(1.06);opacity:1} 100%{transform:translateY(0) scale(1);opacity:1} }
+@keyframes pulseCrit { 0%,100%{box-shadow:0 0 0 0 rgba(239,83,80,0)} 50%{box-shadow:0 0 0 8px rgba(239,83,80,0.4)} }
+@keyframes urgentFlash { 0%,100%{border-left-color:#EF5350} 50%{border-left-color:#FFD700} }
+@keyframes scanline  { 0%{top:-10%} 100%{top:110%} }
+
+/* ── Staggered entrance ── */
+.poster.animate .hdr          { animation:fadeDown 0.5s cubic-bezier(.22,1,.36,1) both; }
+.poster.animate .status-bar   { animation:fadeDown 0.5s 0.08s cubic-bezier(.22,1,.36,1) both; }
+.poster.animate .ticker-wrap  { animation:fadeIn  0.4s 0.14s both; }
+.poster.animate .urgent-banner{ animation:fadeDown 0.5s 0.15s cubic-bezier(.22,1,.36,1) both; }
+.poster.animate .blood-card:nth-child(1){ animation:scaleIn 0.45s 0.25s both; }
+.poster.animate .blood-card:nth-child(2){ animation:scaleIn 0.45s 0.34s both; }
+.poster.animate .blood-card:nth-child(3){ animation:scaleIn 0.45s 0.43s both; }
+.poster.animate .blood-card:nth-child(4){ animation:scaleIn 0.45s 0.52s both; }
+.poster.animate .blood-card:nth-child(1) .badge:nth-of-type(1){ animation:badgePop 0.4s 0.48s both; }
+.poster.animate .blood-card:nth-child(1) .badge:nth-of-type(2){ animation:badgePop 0.4s 0.55s both; }
+.poster.animate .blood-card:nth-child(2) .badge:nth-of-type(1){ animation:badgePop 0.4s 0.57s both; }
+.poster.animate .blood-card:nth-child(2) .badge:nth-of-type(2){ animation:badgePop 0.4s 0.64s both; }
+.poster.animate .blood-card:nth-child(3) .badge:nth-of-type(1){ animation:badgePop 0.4s 0.66s both; }
+.poster.animate .blood-card:nth-child(3) .badge:nth-of-type(2){ animation:badgePop 0.4s 0.73s both; }
+.poster.animate .blood-card:nth-child(4) .badge:nth-of-type(1){ animation:badgePop 0.4s 0.75s both; }
+.poster.animate .blood-card:nth-child(4) .badge:nth-of-type(2){ animation:badgePop 0.4s 0.82s both; }
+.poster.animate .single-hero  { animation:dropIn 0.65s 0.22s cubic-bezier(.22,1,.36,1) both; }
+.poster.animate .legend        { animation:fadeIn 0.4s 0.65s both; }
+.poster.animate .hours-section { animation:fadeUp 0.5s 0.7s  cubic-bezier(.22,1,.36,1) both; }
+.poster.animate .app-section   { animation:fadeUp 0.5s 0.8s  cubic-bezier(.22,1,.36,1) both; }
+.poster.animate .footer        { animation:fadeUp 0.5s 0.88s cubic-bezier(.22,1,.36,1) both; }
+
+/* Persistent effects */
+.badge.critical { animation:pulseCrit 2s 1s infinite !important; }
+.hero-badge.critical { animation:pulseCrit 1.6s 0.4s infinite !important; }
+
+/* Status shimmer */
+.status-bar { position:relative; overflow:hidden; }
+.status-bar::after {
+content:’’; position:absolute; inset:0;
+background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.1) 50%,transparent 100%);
+background-size:200% 100%; animation:shimmer 2.8s 1s infinite linear; pointer-events:none;
+}
+
+/* ═══ HEADER (pure CSS — no external image needed) ══ */
+.hdr {
+background: linear-gradient(135deg, #1a0505 0%, #2a0808 60%, #1a0505 100%);
+border-bottom: 4px solid var(–gold);
+padding: 14px 14px 12px;
+display: flex;
+align-items: center;
+gap: 12px;
+position: relative;
+overflow: hidden;
+}
+/* subtle diagonal pattern */
+.hdr::before {
+content:’’; position:absolute; inset:0;
+background: repeating-linear-gradient(135deg, transparent, transparent 18px, rgba(183,28,28,0.08) 18px, rgba(183,28,28,0.08) 19px);
+pointer-events:none;
+}
+.hdr-logo {
+width: 52px; height: 52px; flex-shrink:0;
+background: var(–red); border-radius: 50%;
+display:flex; align-items:center; justify-content:center;
+font-size:26px; position:relative; z-index:1;
+border: 2px solid var(–gold);
+box-shadow: 0 0 16px rgba(239,83,80,0.5);
+}
+.hdr-text { position:relative; z-index:1; }
+.hdr-name {
+font-family:‘Bebas Neue’,sans-serif;
+font-size: clamp(18px,5.5vw,24px);
+color: var(–gold); letter-spacing:2px; line-height:1;
+}
+.hdr-dept { font-size: clamp(9px,2.4vw,11px); color:#fff; font-weight:700; margin-top:3px; line-height:1.5; }
+.hdr-min  { font-size: clamp(8px,2.1vw,10px); color:#ccc; margin-top:1px; line-height:1.4; }
+
+/* Optional real image overlay (hidden by default, shown if loads) */
+.hdr-img-overlay {
+position:absolute; inset:0; width:100%; height:100%;
+object-fit:cover; object-position:center; display:none; z-index:2;
+}
+
+/* ═══ TICKER ═══════════════════════════ */
+.ticker-wrap {
+background: var(–red);
+padding: 6px 0;
+overflow: hidden;
+white-space: nowrap;
+position: relative;
+border-bottom: 2px solid #8B0000;
+}
+.ticker-inner {
+display: inline-block;
+animation: ticker 18s linear infinite;
+font-size: clamp(10px,2.8vw,12px);
+font-weight:800; color:#fff; letter-spacing:1px;
+text-transform:uppercase; font-family:‘Bebas Neue’,sans-serif;
+padding-left: 100%;
+}
+.ticker-sep { color:var(–gold); margin:0 12px; }
+
+/* ═══ STATUS BAR ════════════════════════ */
+.status-bar {
+background:var(–gold); padding:10px 14px;
+display:flex; align-items:center; justify-content:space-between;
+}
+.status-label {
+font-size:clamp(14px,4vw,17px); font-weight:800; color:#1a0a0a;
+display:flex; align-items:center; gap:6px;
+font-family:‘Bebas Neue’,sans-serif; letter-spacing:1px;
+}
+.status-date { font-size:clamp(10px,2.6vw,12px); font-weight:800; color:var(–gold-dim); }
+
+/* ═══ URGENT BANNER ════════════════════ */
+.urgent-banner {
+background: linear-gradient(135deg, #300000 0%, #1f0000 100%);
+border-left: 5px solid var(–critical);
+padding: 10px 14px;
+display: flex; gap:10px; align-items:flex-start;
+animation: urgentFlash 2.5s 1.5s infinite;
+position:relative; overflow:hidden;
+}
+/* scanline effect */
+.urgent-banner::after {
+content:’’; position:absolute; left:0; width:100%; height:30%;
+background:linear-gradient(to bottom, transparent, rgba(239,83,80,0.06), transparent);
+animation:scanline 3s 1s infinite linear; pointer-events:none;
+}
+.u-icon { font-size:20px; flex-shrink:0; animation:heartbeat 1.5s 1s infinite; display:inline-block; margin-top:1px; }
+.u-label {
+font-size:clamp(10px,2.8vw,12px); font-weight:800; color:var(–critical);
+text-transform:uppercase; letter-spacing:1.5px; margin-bottom:4px;
+font-family:‘Bebas Neue’,sans-serif;
+}
+.u-text { font-size:clamp(11px,3vw,13px); color:#ffcdd2; line-height:1.5; white-space:pre-wrap; }
+
+/* ═══ BLOOD GRID ═══════════════════════ */
+.blood-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:10px; }
+.blood-card {
+background:var(–red-mid); border-radius:12px; padding:12px 10px;
+border:1.5px solid var(–red-edge); transition:transform 0.15s;
+}
+.blood-card:active { transform:scale(0.97); }
+.blood-letter {
+font-size:clamp(30px,8.5vw,46px); font-weight:900; color:#fff;
+line-height:1; margin-bottom:8px; text-align:center;
+font-family:‘Bebas Neue’,sans-serif; letter-spacing:2px;
+}
+.sub-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:5px; }
+.sub-type { font-size:clamp(13px,3.5vw,16px); font-weight:800; color:#ddd; }
+.badge {
+font-size:clamp(8px,2.2vw,11px); font-weight:800; padding:4px 9px;
+border-radius:20px; text-transform:uppercase; letter-spacing:0.5px;
+}
+.badge.critical { background:var(–red);   color:#fff; }
+.badge.low      { background:#E65100;       color:#fff; }
+.badge.adequate { background:#4E342E;       color:#FFCCBC; }
+.badge.good     { background:#1B5E20;       color:#C8E6C9; }
+
+/* ═══ SINGLE HERO ══════════════════════ */
+.single-hero {
+display:none; flex-direction:column; align-items:center;
+padding:16px 14px 12px; position:relative;
+}
+.single-hero.visible { display:flex; }
+
+/* big glowing letter */
+.hero-letter {
+font-family:‘Bebas Neue’,sans-serif;
+font-size:clamp(96px,30vw,140px); line-height:1; color:#fff;
+letter-spacing:4px;
+text-shadow:0 0 80px rgba(239,83,80,0.6), 0 0 30px rgba(239,83,80,0.3), 0 4px 20px rgba(0,0,0,0.8);
+margin-bottom:0;
+}
+.hero-subtype-label {
+font-family:‘Bebas Neue’,sans-serif;
+font-size:clamp(28px,8vw,42px); letter-spacing:3px;
+color:var(–gold); line-height:1; margin-bottom:10px;
+text-shadow:0 0 20px rgba(255,215,0,0.5);
+}
+/* status pill - big single badge */
+.hero-status {
+font-size:clamp(20px,5.5vw,28px); font-weight:900;
+padding:12px 36px; border-radius:40px; text-transform:uppercase;
+letter-spacing:3px; font-family:‘Bebas Neue’,sans-serif;
+margin-bottom:14px;
+}
+.hero-status.critical { background:var(–red);   color:#fff; }
+.hero-status.low      { background:#E65100;       color:#fff; }
+.hero-status.adequate { background:#4E342E;       color:#FFCCBC; }
+.hero-status.good     { background:#1B5E20;       color:#C8E6C9; }
+
+/* call to action strip */
+.hero-cta {
+width:100%; background:var(–red-mid); border-radius:10px;
+padding:10px 14px; border:1.5px solid var(–red-edge);
+text-align:center;
+}
+.hero-cta-text {
+font-size:clamp(12px,3.2vw,14px); color:#ffcdd2; font-weight:700; line-height:1.5;
+}
+.hero-cta-bold { color:var(–gold); font-family:‘Bebas Neue’,sans-serif; font-size:clamp(14px,4vw,17px); display:block; letter-spacing:1px; margin-bottom:2px; }
+
+/* ═══ LEGEND ═══════════════════════════ */
+.legend { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; padding:2px 10px 10px; }
+.leg-item { display:flex; align-items:center; gap:4px; font-size:clamp(10px,2.8vw,12px); color:#bbb; font-weight:700; }
+.dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.dot.critical { background:var(–critical); }
+.dot.low      { background:var(–low); }
+.dot.adequate { background:var(–adequate); }
+.dot.good     { background:var(–good); }
+
+.divider { border:none; border-top:1.5px solid var(–red-edge); margin:0 10px; }
+
+/* ═══ HOURS ════════════════════════════ */
+.hours-section { padding:10px 12px; }
+.sec-title {
+font-size:clamp(12px,3.5vw,14px); font-weight:800; color:var(–gold);
+margin-bottom:8px; display:flex; align-items:center; gap:5px;
+font-family:‘Bebas Neue’,sans-serif; letter-spacing:1px;
+}
+.sessions { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px; }
+.session-card { background:var(–red-mid); border-radius:8px; padding:8px; text-align:center; border:1px solid var(–red-edge); }
+.sess-label { font-size:clamp(8px,2.2vw,10px); color:#aaa; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:3px; }
+.sess-time  { font-size:clamp(11px,3vw,13px); font-weight:800; color:var(–gold); }
+.days-list  { display:flex; flex-direction:column; gap:4px; }
+.day-row    { font-size:clamp(11px,3vw,13px); font-weight:600; }
+.day-row.open   { color:#A5D6A7; }
+.day-row.closed { color:#EF9A9A; }
+
+/* ═══ APP ══════════════════════════════ */
+.app-section {
+margin:0 12px 10px; background:var(–red-mid); border-radius:8px;
+padding:10px 12px; border:1px solid var(–gold);
+display:flex; align-items:center; gap:8px;
+}
+.app-title { font-size:clamp(11px,3vw,13px); font-weight:800; color:var(–gold); }
+.app-sub   { font-size:clamp(10px,2.5vw,11px); color:#ccc; margin-top:2px; }
+
+/* ═══ FOOTER ═══════════════════════════ */
+.footer { background:var(–red); padding:10px 14px; display:flex; justify-content:space-between; align-items:center; }
+.footer-ig      { display:flex; align-items:center; gap:5px; font-size:clamp(11px,3vw,13px); font-weight:800; color:var(–gold); }
+.footer-contact { font-size:clamp(9px,2.5vw,11px); color:#fff; font-weight:700; margin-top:2px; }
+.footer-slogan  { font-size:clamp(11px,3vw,13px); font-weight:800; color:var(–gold); text-align:right; line-height:1.4; letter-spacing:0.5px; font-family:‘Bebas Neue’,sans-serif; }
+.ig-icon { width:17px; height:17px; flex-shrink:0; }
+
+/* ═══ SQUARE MODE ══════════════════════ */
+.poster.square .hours-section,
+.poster.square .divider,
+.poster.square .app-section { display:none; }
+
+/* ═══ SAVE ════════════════════════════ */
+.save-wrap { margin-top:12px; text-align:center; }
+.save-btn {
+padding:11px 30px; font-size:14px; font-weight:700;
+background:var(–red); color:#fff; border:none; border-radius:20px;
+cursor:pointer; -webkit-appearance:none; letter-spacing:0.5px;
+transition:transform 0.15s;
+}
+.save-btn:active { transform:scale(0.96); }
+.save-note { font-size:11px; color:#555; margin-top:5px; }
+.save-hint { font-size:12px; color:#666; margin-top:4px; }
 </style>
+
 </head>
 <body>
 
-<header>
-  <span style="font-size:22px">🩸</span>
-  <h1>Blood Donor Post Generator</h1>
-  <span class="tagline">Brunei National Blood Centre</span>
-</header>
+<!-- ══ EDITOR ══ -->
 
-<div class="app">
-<div class="sidebar">
-  <p class="sec-label">① Select Blood Type</p>
-  <div class="bt-grid" id="btGrid"></div>
-  <div class="reason-box" id="reasonBox"><div style="color:#444;font-size:13px;text-align:center;padding:14px 0">Select a blood type above</div></div>
-  <p class="sec-label">② Choose Format</p>
-  <div class="fmt-grid" id="fmtGrid"></div>
-  <button class="gen-btn" id="genBtn" disabled>
-    ⚡ GENERATE &amp; SAVE GIF
-    <div class="pbar" id="pbar"></div>
-  </button>
-</div>
-<div class="preview-area">
-  <p class="prev-label" id="prevLabel">Configure options on the left</p>
-  <div class="prev-wrap" id="prevWrap" style="display:none">
-    <canvas id="previewCanvas"></canvas>
+<div class="editor-panel">
+  <h3>✏️ Poster Settings</h3>
+
+  <div class="mode-tabs">
+    <div class="mode-tab active" onclick="setMode('all',this)">All Blood Groups</div>
+    <div class="mode-tab" onclick="setMode('single',this)">Single Type Focus</div>
   </div>
-  <p class="status" id="statusMsg"></p>
-  <button class="dl-btn" id="dlBtn">⬇ DOWNLOAD GIF</button>
+
+  <!-- individual subtype buttons: A+, A−, B+, B−, AB+, AB−, O+, O− -->
+
+  <div class="subtype-picker" id="subtypePicker">
+    <button class="stype-btn selected" onclick="selectType('A+',this)">A+</button>
+    <button class="stype-btn" onclick="selectType('A−',this)">A−</button>
+    <button class="stype-btn" onclick="selectType('B+',this)">B+</button>
+    <button class="stype-btn" onclick="selectType('B−',this)">B−</button>
+    <button class="stype-btn" onclick="selectType('AB+',this)">AB+</button>
+    <button class="stype-btn" onclick="selectType('AB−',this)">AB−</button>
+    <button class="stype-btn" onclick="selectType('O+',this)">O+</button>
+    <button class="stype-btn" onclick="selectType('O−',this)">O−</button>
+  </div>
+
+  <div class="toggle-row">
+    <label>Urgent Banner</label>
+    <label class="toggle-switch">
+      <input type="checkbox" id="urgentToggle" checked onchange="toggleUrgent(this.checked)">
+      <div class="toggle-track"></div>
+      <div class="toggle-thumb"></div>
+    </label>
+  </div>
+  <div id="urgentFields">
+    <div class="editor-row">
+      <label>Reason</label>
+      <textarea id="urgentText" oninput="updateUrgent()">Blood stocks are critically low ahead of the upcoming school holiday period. Please donate today — every unit counts.</textarea>
+    </div>
+  </div>
+
+  <div class="editor-row">
+    <label>Date</label>
+    <input type="text" id="dateText" value="21 April 2025" oninput="updateDate()">
+  </div>
 </div>
+
+<!-- ══ FORMAT ══ -->
+
+<div class="format-bar">
+  <button class="fmt-btn active" onclick="setFmt('portrait',this)">Portrait Reel (9:16)</button>
+  <button class="fmt-btn" onclick="setFmt('square',this)">Square Post (1:1)</button>
 </div>
+
+<!-- ══ POSTER ══ -->
+
+<div class="poster-wrap">
+  <div class="poster portrait animate" id="poster">
+    <div class="poster-inner" id="posterInner">
+
+```
+  <!-- ── HEADER (self-contained, no external image) ── -->
+  <div class="hdr">
+    <div class="hdr-logo">🩸</div>
+    <div class="hdr-text">
+      <div class="hdr-name">Bloodbank RIPAS</div>
+      <div class="hdr-dept">
+        Pusat Pendermaan Darah<br>
+        Jabatan Perkhidmatan Makmal
+      </div>
+      <div class="hdr-min">Kementerian Kesihatan Brunei Darussalam</div>
+    </div>
+  </div>
+
+  <!-- ── TICKER ── -->
+  <div class="ticker-wrap" id="tickerWrap">
+    <div class="ticker-inner" id="tickerInner">
+      🩸 URGENT: WE NEED YOUR BLOOD NOW
+      <span class="ticker-sep">◆</span>
+      WALK IN OR BOOK VIA BLOODKAD APP
+      <span class="ticker-sep">◆</span>
+      HOSPITAL RIPAS · MON–THU &amp; SAT · 8AM–11:30AM · 1:30PM–4PM
+      <span class="ticker-sep">◆</span>
+      📞 7440267 / 7440277
+      <span class="ticker-sep">◆</span>
+      🩸 URGENT: WE NEED YOUR BLOOD NOW
+      <span class="ticker-sep">◆</span>
+      WALK IN OR BOOK VIA BLOODKAD APP
+      <span class="ticker-sep">◆</span>
+      HOSPITAL RIPAS · MON–THU &amp; SAT · 8AM–11:30AM · 1:30PM–4PM
+      <span class="ticker-sep">◆</span>
+      📞 7440267 / 7440277
+      <span class="ticker-sep">◆</span>
+    </div>
+  </div>
+
+  <!-- ── STATUS BAR ── -->
+  <div class="status-bar">
+    <div class="status-label">🩸 Current Blood Stock</div>
+    <div class="status-date" id="posterDate">Updated: 21 April 2025</div>
+  </div>
+
+  <!-- ── URGENT BANNER ── -->
+  <div class="urgent-banner" id="urgentBanner">
+    <div class="u-icon">🚨</div>
+    <div>
+      <div class="u-label">⚠ Why We Need Your Blood Now</div>
+      <div class="u-text" id="urgentDisplay">Blood stocks are critically low ahead of the upcoming school holiday period. Please donate today — every unit counts.</div>
+    </div>
+  </div>
+
+  <!-- ── ALL GROUPS ── -->
+  <div class="blood-grid" id="allGrid">
+    <div class="blood-card">
+      <div class="blood-letter">A</div>
+      <div class="sub-row"><span class="sub-type">A+</span><span class="badge adequate">Adequate</span></div>
+      <div class="sub-row"><span class="sub-type">A−</span><span class="badge low">Low</span></div>
+    </div>
+    <div class="blood-card">
+      <div class="blood-letter">B</div>
+      <div class="sub-row"><span class="sub-type">B+</span><span class="badge good">Good</span></div>
+      <div class="sub-row"><span class="sub-type">B−</span><span class="badge adequate">Adequate</span></div>
+    </div>
+    <div class="blood-card">
+      <div class="blood-letter">AB</div>
+      <div class="sub-row"><span class="sub-type">AB+</span><span class="badge low">Low</span></div>
+      <div class="sub-row"><span class="sub-type">AB−</span><span class="badge critical">Critical</span></div>
+    </div>
+    <div class="blood-card">
+      <div class="blood-letter">O</div>
+      <div class="sub-row"><span class="sub-type">O+</span><span class="badge critical">Critical</span></div>
+      <div class="sub-row"><span class="sub-type">O−</span><span class="badge low">Low</span></div>
+    </div>
+  </div>
+
+  <!-- ── SINGLE TYPE HERO ── -->
+  <div class="single-hero" id="singleHero">
+    <div class="hero-letter" id="heroLetter">O</div>
+    <div class="hero-subtype-label" id="heroSubtype">O+</div>
+    <div class="hero-status critical" id="heroStatus">Critical</div>
+    <div class="hero-cta">
+      <span class="hero-cta-bold">🩸 We Urgently Need Your Donation</span>
+      <span class="hero-cta-text" id="heroCta">If your blood type is <strong id="heroCtaType">O+</strong>, please donate today.<br>Visit Bloodbank RIPAS, Hospital RIPAS.</span>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="leg-item"><div class="dot critical"></div>Critical</div>
+    <div class="leg-item"><div class="dot low"></div>Low</div>
+    <div class="leg-item"><div class="dot adequate"></div>Adequate</div>
+    <div class="leg-item"><div class="dot good"></div>Good</div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Hours -->
+  <div class="hours-section">
+    <div class="sec-title">⏰ Bloodbank RIPAS — Donation Hours</div>
+    <div class="sessions">
+      <div class="session-card">
+        <div class="sess-label">Morning</div>
+        <div class="sess-time">8:00 – 11:30 AM</div>
+      </div>
+      <div class="session-card">
+        <div class="sess-label">Afternoon</div>
+        <div class="sess-time">1:30 – 4:00 PM</div>
+      </div>
+    </div>
+    <div class="days-list">
+      <div class="day-row open">✅ Monday – Thursday</div>
+      <div class="day-row open">✅ Saturday</div>
+      <div class="day-row closed">❌ Friday — Closed</div>
+      <div class="day-row closed">❌ Sunday — Closed</div>
+      <div class="day-row closed">❌ Public Holidays — Closed</div>
+    </div>
+  </div>
+
+  <!-- App -->
+  <div class="app-section">
+    <div style="font-size:22px">📱</div>
+    <div>
+      <div class="app-title">Book via BLOODKAD App!</div>
+      <div class="app-sub">Schedule your appointment — iOS &amp; Android</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div>
+      <div class="footer-ig">
+        <svg class="ig-icon" viewBox="0 0 24 24" fill="none">
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5" stroke="#FFD700" stroke-width="2"/>
+          <circle cx="12" cy="12" r="4" stroke="#FFD700" stroke-width="2"/>
+          <circle cx="17.5" cy="6.5" r="1" fill="#FFD700"/>
+        </svg>
+        bloodbank_ripas
+      </div>
+      <div class="footer-contact">📞 7440267 / 7440277 (Office hrs)</div>
+    </div>
+    <div class="footer-slogan">Donate Blood<br>Save Lives 🩸</div>
+  </div>
+
+</div><!-- /poster-inner -->
+```
+
+  </div><!-- /poster -->
+</div>
+
+<!-- Save -->
+
+<div class="save-wrap">
+  <button class="save-btn" onclick="savePoster()">💾 Save Poster (PNG)</button>
+  <div class="save-note">Saves as a still PNG image — animations play on screen only</div>
+  <div class="save-hint" id="hint">Portrait 9:16 — for Instagram Reels &amp; Stories</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <script>
-// ═══════════════════════════════════════════════════════════════════════
-// SELF-CONTAINED GIF ENCODER  (Neuquant + LZW, no workers, no CDN)
-// ═══════════════════════════════════════════════════════════════════════
-(function(G){
-"use strict";
-// ── Neuquant colour quantiser ─────────────────────────────────────────
-function neuquant(pixels,samplefac){
-  var netsize=256,maxnetpos=255,netbiasshift=4,ncycles=100,intbiasshift=16,
-      intbias=1<<intbiasshift,gammashift=10,gamma=1<<gammashift,betashift=10,
-      beta=intbias>>betashift,betagamma=intbias<<(gammashift-betashift),
-      initrad=netsize>>3,radiusbiasshift=6,radiusbias=1<<radiusbiasshift,
-      initradius=initrad*radiusbias,radiusdec=30,alphabiasshift=10,
-      initalpha=1<<alphabiasshift,radbiasshift=8,radbias=1<<radbiasshift,
-      alpharadbshift=alphabiasshift+radbiasshift,alpharadbias=1<<alpharadbshift;
-  var network=[],netindex=new Int32Array(256),
-      bias=new Int32Array(netsize),freq=new Int32Array(netsize),
-      radpower=new Int32Array(initrad);
-  var i,v;
-  for(i=0;i<netsize;i++){v=(i<<(netbiasshift+8))/netsize;network[i]=[v,v,v,0];freq[i]=intbias/netsize;}
-  var lengthcount=pixels.length,samplepixels=Math.floor(lengthcount/(3*samplefac)),
-      delta=Math.max(1,Math.floor(samplepixels/ncycles));
-  var alpha=initalpha,radius=initradius,rad=radius>>radiusbiasshift;
-  if(rad>1){for(var ri=0;ri<rad;ri++)radpower[ri]=alpha*(((rad*rad-ri*ri)*radbias)/(rad*rad));}
-  else rad=0;
-  var primes=[499,491,487,503],step=primes[0];
-  for(var pi=0;pi<primes.length;pi++){if(lengthcount%primes[pi]!==0){step=primes[pi];break;}}
-  var pix=0;
-  for(var j=0;j<samplepixels;){
-    var b=pixels[pix]&255,g_=pixels[pix+1]&255,r_=pixels[pix+2]&255;
-    // contest
-    var bestd=~(1<<31),bestbiasd=bestd,bestpos=-1,bestbiaspos=-1;
-    for(var ni=0;ni<netsize;ni++){
-      var n=network[ni],d=Math.abs(n[0]-b)+Math.abs(n[1]-g_)+Math.abs(n[2]-r_);
-      if(d<bestd){bestd=d;bestpos=ni;}
-      var bd=d-(bias[ni]>>intbiasshift-netbiasshift);
-      if(bd<bestbiasd){bestbiasd=bd;bestbiaspos=ni;}
-      freq[ni]-=freq[ni]>>4;bias[ni]+=freq[ni]<<gammashift-netbiasshift;
-    }
-    freq[bestpos]+=delta;bias[bestpos]-=betagamma;
-    // altersingle
-    var p=network[bestbiaspos];
-    p[0]-=(alpha*(p[0]-b))/initalpha;
-    p[1]-=(alpha*(p[1]-g_))/initalpha;
-    p[2]-=(alpha*(p[2]-r_))/initalpha;
-    // alterneigh
-    if(rad>0){
-      var lo=Math.max(bestbiaspos-rad,0),hi=Math.min(bestbiaspos+rad,netsize);
-      var jn=bestbiaspos+1,kn=bestbiaspos-1,m2=1;
-      while(jn<hi||kn>lo){
-        var a2=radpower[m2++]>>radbiasshift;
-        if(jn<hi){var q=network[jn++];q[0]-=(a2*(q[0]-b))/initalpha;q[1]-=(a2*(q[1]-g_))/initalpha;q[2]-=(a2*(q[2]-r_))/initalpha;}
-        if(kn>lo){var q2=network[kn--];q2[0]-=(a2*(q2[0]-b))/initalpha;q2[1]-=(a2*(q2[1]-g_))/initalpha;q2[2]-=(a2*(q2[2]-r_))/initalpha;}
+var currentFmt  = 'portrait';
+var currentMode = 'all';
+var selectedType = 'O+';
+
+var typeData = {
+  'A+':  { group:'A',  level:'adequate' },
+  'A−':  { group:'A',  level:'low'      },
+  'B+':  { group:'B',  level:'good'     },
+  'B−':  { group:'B',  level:'adequate' },
+  'AB+': { group:'AB', level:'low'      },
+  'AB−': { group:'AB', level:'critical' },
+  'O+':  { group:'O',  level:'critical' },
+  'O−':  { group:'O',  level:'low'      }
+};
+
+function reAnimate() {
+  var p = document.getElementById('poster');
+  p.classList.remove('animate');
+  void p.offsetWidth;
+  p.classList.add('animate');
+}
+
+function setMode(mode, btn) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-tab').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  var picker = document.getElementById('subtypePicker');
+  if (mode === 'single') {
+    picker.classList.add('visible');
+    renderSingle(selectedType);
+  } else {
+    picker.classList.remove('visible');
+    document.getElementById('allGrid').style.display = '';
+    document.getElementById('singleHero').classList.remove('visible');
+  }
+  if (currentFmt === 'square') setTimeout(applySquareScale, 60);
+  reAnimate();
+}
+
+function selectType(type, btn) {
+  selectedType = type;
+  document.querySelectorAll('.stype-btn').forEach(function(b){ b.classList.remove('selected'); });
+  btn.classList.add('selected');
+  renderSingle(type);
+  if (currentFmt === 'square') setTimeout(applySquareScale, 60);
+  reAnimate();
+}
+
+function renderSingle(type) {
+  var d = typeData[type];
+  document.getElementById('allGrid').style.display = 'none';
+  var hero = document.getElementById('singleHero');
+  hero.classList.add('visible');
+  document.getElementById('heroLetter').textContent   = d.group;
+  document.getElementById('heroSubtype').textContent  = type;
+  var statusEl = document.getElementById('heroStatus');
+  statusEl.className = 'hero-status ' + d.level;
+  statusEl.textContent = d.level.charAt(0).toUpperCase() + d.level.slice(1);
+  document.getElementById('heroCtaType').textContent = type;
+}
+
+function updateUrgent() {
+  document.getElementById('urgentDisplay').textContent = document.getElementById('urgentText').value;
+  if (currentFmt === 'square') setTimeout(applySquareScale, 30);
+}
+function updateDate() {
+  document.getElementById('posterDate').textContent = 'Updated: ' + document.getElementById('dateText').value;
+}
+function toggleUrgent(show) {
+  document.getElementById('urgentBanner').style.display = show ? 'flex' : 'none';
+  document.getElementById('urgentFields').style.display = show ? 'block' : 'none';
+  if (currentFmt === 'square') setTimeout(applySquareScale, 30);
+}
+
+function applySquareScale() {
+  var poster = document.getElementById('poster');
+  var inner  = document.getElementById('posterInner');
+  if (currentFmt !== 'square') { inner.style.transform=''; inner.style.width=''; return; }
+  inner.style.transform=''; inner.style.width='100%';
+  var aW = poster.offsetWidth, aH = poster.offsetHeight;
+  var nH = inner.scrollHeight;
+  if (nH > aH) {
+    var s = aH / nH;
+    inner.style.transform = 'scale('+s+')';
+    inner.style.width = (aW/s)+'px';
+  }
+}
+
+function setFmt(fmt, btn) {
+  currentFmt = fmt;
+  document.getElementById('poster').className = 'poster '+fmt+' animate';
+  document.querySelectorAll('.fmt-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById('hint').textContent =
+    fmt==='portrait' ? 'Portrait 9:16 — for Instagram Reels & Stories'
+                     : 'Square 1:1 — for Instagram Feed posts';
+  var inner = document.getElementById('posterInner');
+  if (fmt==='square') setTimeout(applySquareScale,60);
+  else { inner.style.transform=''; inner.style.width='100%'; }
+}
+
+function savePoster() {
+  var hint   = document.getElementById('hint');
+  var poster = document.getElementById('poster');
+  var inner  = document.getElementById('posterInner');
+  hint.textContent = 'Generating…';
+  poster.classList.remove('animate');
+
+  var origT=inner.style.transform, origW=inner.style.width,
+      origO=poster.style.overflow, origA=poster.style.aspectRatio;
+
+  if (currentFmt==='square') {
+    inner.style.transform='none'; inner.style.width='100%';
+    poster.style.overflow='visible'; poster.style.aspectRatio='unset';
+  }
+
+  html2canvas(inner,{scale:3,backgroundColor:'#1a0a0a',useCORS:true,logging:false})
+    .then(function(canvas){
+      var fc = canvas;
+      if (currentFmt==='square') {
+        var side=Math.max(canvas.width,canvas.height);
+        fc=document.createElement('canvas'); fc.width=fc.height=side;
+        var ctx=fc.getContext('2d'); ctx.fillStyle='#1a0a0a';
+        ctx.fillRect(0,0,side,side);
+        ctx.drawImage(canvas,(side-canvas.width)/2,(side-canvas.height)/2);
       }
-    }
-    pix+=step*3;if(pix>=lengthcount)pix-=lengthcount;
-    j++;
-    if(j%delta===0){
-      alpha-=Math.floor(alpha/30);
-      if((radius-=radiusdec)<=1)radius=1;
-      rad=radius>>radiusbiasshift;
-      if(rad>1)for(var ri2=0;ri2<rad;ri2++)radpower[ri2]=alpha*(((rad*rad-ri2*ri2)*radbias)/(rad*rad));
-      else rad=0;
-    }
-  }
-  // unbiasnet
-  for(i=0;i<netsize;i++){network[i][0]>>=netbiasshift;network[i][1]>>=netbiasshift;network[i][2]>>=netbiasshift;network[i][3]=i;}
-  // inxbuild
-  var previouscol=0,startpos=0;
-  for(i=0;i<netsize;i++){
-    var pp=network[i],smallpos=i,smallval=pp[1];
-    for(var jj=i+1;jj<netsize;jj++)if(network[jj][1]<smallval){smallpos=jj;smallval=network[jj][1];}
-    var qq=network[smallpos];if(i!==smallpos){var tmp=network[i];network[i]=qq;network[smallpos]=tmp;}
-    if(smallval!==previouscol){netindex[previouscol]=(startpos+i)>>1;for(var jj2=previouscol+1;jj2<smallval;jj2++)netindex[jj2]=i;previouscol=smallval;startpos=i;}
-  }
-  netindex[previouscol]=(startpos+maxnetpos)>>1;
-  for(var jj3=previouscol+1;jj3<256;jj3++)netindex[jj3]=maxnetpos;
-  // build palette + map fn
-  var palette=new Uint8Array(netsize*3);
-  for(i=0;i<netsize;i++){palette[i*3]=network[i][2];palette[i*3+1]=network[i][1];palette[i*3+2]=network[i][0];}
-  function map(r2,g2,b2){
-    var bestd2=1000,best2=-1,idx=netindex[g2],j2=idx-1;
-    while(idx<netsize||j2>=0){
-      if(idx<netsize){var pp2=network[idx];var d2=pp2[1]-g2;if(d2>=bestd2)idx=netsize;else{idx++;d2=Math.abs(d2)+(Math.abs(pp2[0]-b2)+Math.abs(pp2[2]-r2));if(d2<bestd2){bestd2=d2;best2=pp2[3];}}}
-      if(j2>=0){var pp3=network[j2];var d3=g2-pp3[1];if(d3>=bestd2)j2=-1;else{j2--;d3=Math.abs(d3)+(Math.abs(pp3[0]-b2)+Math.abs(pp3[2]-r2));if(d3<bestd2){bestd2=d3;best2=pp3[3];}}}
-    }
-    return best2;
-  }
-  return{palette:palette,map:map};
-}
-
-// ── LZW encoder ───────────────────────────────────────────────────────
-function lzwEncode(idx,depth){
-  var clear=1<<depth,eoi=clear+1,codeSize=depth+1,out=[],buf=0,cnt=0;
-  var table={},nextCode=eoi+1;
-  function reset(){table={};for(var ii=0;ii<clear;ii++)table[''+ii]=ii;nextCode=eoi+1;codeSize=depth+1;}
-  function emit(code){buf|=code<<cnt;cnt+=codeSize;while(cnt>=8){out.push(buf&255);buf>>=8;cnt-=8;}if(nextCode>(1<<codeSize)&&codeSize<12)codeSize++;}
-  reset();emit(clear);
-  var s=''+idx[0];
-  for(var i=1;i<idx.length;i++){
-    var c=''+idx[i],ns=s+','+c;
-    if(table[ns]!==undefined){s=ns;}
-    else{emit(table[s]);if(nextCode<4096)table[ns]=nextCode++;else{emit(clear);reset();}s=c;}
-  }
-  emit(table[s]);emit(eoi);if(cnt>0)out.push(buf&255);
-  return out;
-}
-
-function u16(v){return[v&255,(v>>8)&255];}
-
-// ── Public API ────────────────────────────────────────────────────────
-G.GIFEncoder=function(w,h,delayCs){
-  this.w=w;this.h=h;this.delay=delayCs||6;this.frames=[];
-};
-G.GIFEncoder.prototype.addFrame=function(imageData){this.frames.push(imageData);};
-G.GIFEncoder.prototype.encode=function(){
-  var w=this.w,h=this.h,delay=this.delay,frames=this.frames;
-  var bytes=[];
-  // GIF89a header
-  bytes.push(0x47,0x49,0x46,0x38,0x39,0x61);
-  bytes.push.apply(bytes,u16(w));bytes.push.apply(bytes,u16(h));
-  // quantise first frame for global palette (used as fallback)
-  var f0=frames[0],px0=new Uint8Array(f0.data.buffer,f0.data.byteOffset,f0.data.byteLength);
-  var rgb0=new Uint8Array(w*h*3);
-  for(var ii=0;ii<w*h;ii++){rgb0[ii*3]=px0[ii*4];rgb0[ii*3+1]=px0[ii*4+1];rgb0[ii*3+2]=px0[ii*4+2];}
-  var nq0=neuquant(rgb0,10);
-  bytes.push(0xf7,0,0);bytes.push.apply(bytes,nq0.palette);
-  // loop extension
-  bytes.push(0x21,0xff,0x0b,0x4e,0x45,0x54,0x53,0x43,0x41,0x50,0x45,0x32,0x2e,0x30,3,1,0,0,0);
-  for(var fi=0;fi<frames.length;fi++){
-    var fd=frames[fi];
-    var px=new Uint8Array(fd.data.buffer,fd.data.byteOffset,fd.data.byteLength);
-    var rgb=new Uint8Array(w*h*3);
-    for(var i=0;i<w*h;i++){rgb[i*3]=px[i*4];rgb[i*3+1]=px[i*4+1];rgb[i*3+2]=px[i*4+2];}
-    var nq=neuquant(rgb,10);
-    // Graphic Control Extension
-    bytes.push(0x21,0xf9,4,0);bytes.push.apply(bytes,u16(delay));bytes.push(0,0);
-    // Image descriptor with local colour table
-    bytes.push(0x2c);bytes.push.apply(bytes,u16(0));bytes.push.apply(bytes,u16(0));
-    bytes.push.apply(bytes,u16(w));bytes.push.apply(bytes,u16(h));
-    bytes.push(0x87);// local ct flag + 256 colors
-    bytes.push.apply(bytes,nq.palette);
-    // index pixels
-    var idxArr=new Uint8Array(w*h);
-    for(var j=0;j<w*h;j++)idxArr[j]=nq.map(px[j*4],px[j*4+1],px[j*4+2]);
-    var lzw=lzwEncode(idxArr,8);
-    bytes.push(8);
-    var pos=0;
-    while(pos<lzw.length){var sz=Math.min(255,lzw.length-pos);bytes.push(sz);bytes.push.apply(bytes,lzw.slice(pos,pos+sz));pos+=sz;}
-    bytes.push(0);
-  }
-  bytes.push(0x3b);
-  return new Uint8Array(bytes);
-};
-})(window);
-
-// ═══════════════════════════════════════════════════════════════════════
-// APP DATA
-// ═══════════════════════════════════════════════════════════════════════
-var BLOOD_TYPES=[
-  {type:'O\u2212', urgency:'CRITICAL',color:'#FFD700',reason:'Universal emergency donor. Used in trauma & surgery when there is no time for type-matching. Stocks depleted within 24 hrs.',donate:'Compatible with ALL blood types. Only ~7% of people have this type.'},
-  {type:'AB\u2212',urgency:'CRITICAL',color:'#FFD700',reason:'Rarest blood type (~1% of population). Universal plasma & platelet donor. Critically low with very few eligible donors.',donate:'Can donate plasma to ALL patients. Urgently needed now.'},
-  {type:'B\u2212', urgency:'URGENT',  color:'#E01020',reason:'High demand for thalassaemia patients needing frequent transfusions. Very few B\u2212 donors available nationally.',donate:'Only ~2% of the population is B\u2212. Your donation is rare and vital.'},
-  {type:'A\u2212', urgency:'URGENT',  color:'#E01020',reason:'Needed for oncology patients undergoing chemotherapy. Cannot be substituted. Below safe 3-day buffer level.',donate:'A\u2212 donors can help A\u2212 and O\u2212 patients during chemotherapy.'},
-  {type:'O+', urgency:'NEEDED',  color:'#ffffff',reason:'Most common type, highest consumption. Maternity & surgical wards running on short reserves. Always in demand.',donate:'Most common type. O+ can donate to all positive blood types.'},
-  {type:'B+', urgency:'NEEDED',  color:'#ffffff',reason:'Required for dialysis patients and post-cardiac surgery recovery. Regional transfers suspended due to shortages.',donate:'B+ donors help B+, AB+ patients in surgery and dialysis wards.'},
-  {type:'A+', urgency:'NEEDED',  color:'#ffffff',reason:'Moderate shortage. In demand for general surgeries and accident victims. Stocks below recommended 5-day buffer.',donate:'A+ is the 2nd most common type. Help replenish general stocks.'},
-  {type:'AB+',urgency:'NEEDED',  color:'#ffffff',reason:'Universal recipient. AB+ whole blood needed for trauma surgery pre-op reserves. All donations welcome.',donate:'AB+ can receive from any blood type. Whole blood donations vital.'},
-];
-var FORMATS=[
-  {id:'post', name:'IG Post',   sub:'1080\u00d71080',w:1080,h:1080,iw:40,ih:40},
-  {id:'story',name:'WA Status', sub:'1080\u00d71920',w:1080,h:1920,iw:28,ih:50},
-  {id:'reel', name:'IG Reel',   sub:'1080\u00d71920',w:1080,h:1920,iw:28,ih:50},
-];
-
-var selType=null,selFmt=FORMATS[0],animHandle=null,gifURL=null;
-
-// ── Build blood type buttons ──────────────────────────────────────────
-var btGrid=document.getElementById('btGrid');
-BLOOD_TYPES.forEach(function(bt){
-  var isCrit=bt.urgency==='CRITICAL',isUrg=bt.urgency==='URGENT';
-  var d=document.createElement('div');
-  d.className='bt-btn'+(isCrit?' crit':'');
-  d.innerHTML='<div class="dot dot-'+(isCrit?'c':isUrg?'u':'n')+'"></div><div class="bt-type">'+bt.type+'</div><div class="bt-tag">'+bt.urgency+'</div>';
-  d.onclick=function(){selectBT(bt,d);};btGrid.appendChild(d);
-});
-
-// ── Build format buttons ──────────────────────────────────────────────
-var fmtGrid=document.getElementById('fmtGrid');
-FORMATS.forEach(function(fmt,i){
-  var d=document.createElement('div');
-  d.className='fmt-btn'+(i===0?' sel':'');
-  d.innerHTML='<div class="fmt-icon" style="width:'+fmt.iw+'px;height:'+fmt.ih+'px"></div><div class="fmt-name">'+fmt.name+'</div><div class="fmt-sub">'+fmt.sub+'</div>';
-  d.onclick=function(){
-    document.querySelectorAll('.fmt-btn').forEach(function(b){b.classList.remove('sel');});
-    d.classList.add('sel');selFmt=fmt;
-    if(selType)startPreview();
-  };
-  fmtGrid.appendChild(d);
-});
-
-function selectBT(bt,el){
-  selType=bt;
-  document.querySelectorAll('.bt-btn').forEach(function(b){b.classList.remove('sel');});
-  el.classList.add('sel');
-  var isCrit=bt.urgency==='CRITICAL',isUrg=bt.urgency==='URGENT';
-  var pillCls=isCrit?'pill-c':isUrg?'pill-u':'pill-n';
-  var rb=document.getElementById('reasonBox');
-  rb.className='reason-box'+(isCrit?' crit':'');
-  rb.innerHTML='<div class="rb-type">'+bt.type+'</div><span class="pill '+pillCls+'">'+bt.urgency+'</span><p class="rb-reason">'+bt.reason+'</p><p class="rb-donate">'+bt.donate+'</p>';
-  document.getElementById('genBtn').disabled=false;
-  document.getElementById('dlBtn').style.display='none';
-  gifURL=null;
-  startPreview();
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// CANVAS DRAWING
-// ═══════════════════════════════════════════════════════════════════════
-function S(n,W){return Math.round(n*(W/1080));}
-function ease(x){return 1-Math.pow(1-Math.min(1,x),3);}
-
-function rr(ctx,x,y,w,h,r,fill,stroke,sw){
-  ctx.beginPath();ctx.roundRect(x,y,w,h,r);
-  if(fill){ctx.fillStyle=fill;ctx.fill();}
-  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=sw||1;ctx.stroke();}
-}
-
-function wrapLines(ctx,text,x,y,maxW,lh){
-  var words=text.split(' '),line='',rows=[];
-  words.forEach(function(w){var t=line?line+' '+w:w;if(ctx.measureText(t).width>maxW&&line){rows.push(line);line=w;}else line=t;});
-  rows.push(line);
-  rows.forEach(function(r,i){ctx.fillText(r,x,y+i*lh);});
-  return rows.length*lh;
-}
-
-function drawFrame(ctx,bt,t,W,H){
-  var isV=H>W;
-  var isCrit=bt.urgency==='CRITICAL',isUrg=bt.urgency==='URGENT';
-  var accent=isCrit?'#FFD700':isUrg?'#E01020':'#eeeeee';
-
-  // bg
-  ctx.fillStyle='#0d0d0d';ctx.fillRect(0,0,W,H);
-  var gr=ctx.createRadialGradient(W/2,0,0,W/2,H*.55,H*.9);
-  gr.addColorStop(0,'rgba(160,0,16,0.13)');gr.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=gr;ctx.fillRect(0,0,W,H);
-
-  // phase
-  var phase,sub;
-  if(t<0.20){phase='intro';sub=t/0.20;}
-  else if(t<0.65){phase='main';sub=(t-0.20)/0.45;}
-  else{phase='info';sub=(t-0.65)/0.35;}
-  var e=ease(sub);
-
-  // ─── INTRO ───────────────────────────────────────────────────────
-  if(phase==='intro'){
-    var cx=W/2,cy=isV?H*0.29:H*0.32;
-    // outer pulse ring
-    var ringR=S(68+46*sub,W);
-    ctx.beginPath();ctx.arc(cx,cy,ringR,0,Math.PI*2);
-    ctx.strokeStyle='rgba(224,16,32,'+(Math.max(0,0.7-sub))+')';
-    ctx.lineWidth=S(4,W);ctx.stroke();
-    // blood drop shape
-    var br=S(56,W);
-    ctx.fillStyle='#AA0015';
-    ctx.beginPath();ctx.arc(cx,cy,br,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(cx,cy-br-S(20,W));
-    ctx.quadraticCurveTo(cx+S(28,W),cy-S(4,W),cx+br*.6,cy+S(16,W));
-    ctx.quadraticCurveTo(cx,cy+br+S(5,W),cx-br*.6,cy+S(16,W));
-    ctx.quadraticCurveTo(cx-S(28,W),cy-S(4,W),cx,cy-br-S(20,W));
-    ctx.fillStyle='#AA0015';ctx.fill();
-
-    // URGENT badge
-    var midY=isV?H*0.50:H*0.54;
-    var bw=S(280,W),bh=S(44,W),bx=(W-bw)/2;
-    rr(ctx,bx,midY,bw,bh,S(6,W),'#E01020');
-    ctx.fillStyle='#fff';ctx.font='900 '+S(21,W)+'px "Barlow Condensed",sans-serif';
-    ctx.textAlign='center';ctx.fillText('\u26a0  URGENT CALLOUT',W/2,midY+S(30,W));
-
-    // headline
-    ctx.font='normal '+S(isV?86:68,W)+'px "Bebas Neue",sans-serif';ctx.textAlign='center';
-    ctx.fillStyle='#fff';ctx.fillText('WE NEED',W/2,midY+bh+S(isV?86:70,W));
-    ctx.fillStyle='#E01020';ctx.fillText('YOUR BLOOD',W/2,midY+bh+S(isV?175:136,W));
-
-    ctx.font='600 '+S(19,W)+'px "Barlow Condensed",sans-serif';
-    ctx.fillStyle='#555';ctx.fillText('BRUNEI NATIONAL BLOOD CENTRE \u00b7 2026',W/2,midY+bh+S(isV?215:170,W));
-  }
-
-  // ─── MAIN ────────────────────────────────────────────────────────
-  if(phase==='main'){
-    ctx.textAlign='center';
-    var yTop=isV?H*0.07:H*0.05;
-    var fs=S(isV?210:160,W);
-    ctx.font='normal '+fs+'px "Bebas Neue",sans-serif';
-    ctx.shadowColor=accent;ctx.shadowBlur=S(48,W);
-    ctx.fillStyle=accent;ctx.fillText(bt.type,W/2,yTop+fs*.87);
-    ctx.shadowBlur=0;
-
-    // urgency pill
-    var pw=S(224,W),ph=S(46,W),px2=(W-pw)/2,py2=yTop+fs*.92+S(8,W);
-    var pf=isCrit?'rgba(255,215,0,0.12)':isUrg?'rgba(224,16,32,0.12)':'rgba(255,255,255,0.06)';
-    var ps=isCrit?'rgba(255,215,0,0.44)':isUrg?'rgba(224,16,32,0.44)':'rgba(255,255,255,0.18)';
-    rr(ctx,px2,py2,pw,ph,S(23,W),pf,ps,S(2,W));
-    ctx.fillStyle=accent;ctx.font='700 '+S(20,W)+'px "Barlow Condensed",sans-serif';
-    ctx.fillText(bt.urgency,W/2,py2+S(31,W));
-
-    // reason
-    ctx.textAlign='left';ctx.fillStyle='#ccc';
-    ctx.font='600 '+S(25,W)+'px "Barlow Condensed",sans-serif';
-    var tx=S(65,W),tw=W-S(130,W);
-    var ry=py2+ph+S(26,W);
-    ry+=wrapLines(ctx,bt.reason,tx,ry,tw,S(37,W));
-
-    ctx.font='400 '+S(22,W)+'px "Barlow Condensed",sans-serif';
-    ctx.fillStyle='#666';
-    wrapLines(ctx,bt.donate,tx,ry+S(10,W),tw,S(33,W));
-
-    // stock bar
-    var barY=isV?H*0.80:H*0.75,barX=S(58,W),barW=W-S(116,W);
-    var pct=isCrit?0.07:isUrg?0.21:0.46;
-    rr(ctx,barX,barY,barW,S(13,W),S(7,W),'#1e1e1e');
-    var fw=barW*pct*e;
-    if(fw>S(13,W))rr(ctx,barX,barY,fw,S(13,W),S(7,W),accent);
-    ctx.textAlign='left';ctx.font='600 '+S(18,W)+'px "Barlow Condensed",sans-serif';
-    ctx.fillStyle='#555';ctx.fillText('STOCK LEVEL',barX,barY+S(34,W));
-    ctx.textAlign='right';ctx.fillStyle=accent;ctx.fillText(bt.urgency,barX+barW,barY+S(34,W));
-  }
-
-  // ─── INFO ─────────────────────────────────────────────────────────
-  if(phase==='info'){
-    ctx.textAlign='center';
-    ctx.font='600 '+S(18,W)+'px "Barlow Condensed",sans-serif';
-    ctx.fillStyle='#666';ctx.fillText('HOW TO DONATE',W/2,S(38,W));
-    ctx.font='normal '+S(46,W)+'px "Bebas Neue",sans-serif';
-    ctx.fillStyle='#fff';ctx.fillText('BRUNEI BLOOD BANK',W/2,S(84,W));
-
-    var rows=[
-      ['\ud83d\udccd','RIPAS Hospital, Jalan PA Muhtadee Billah','Bandar Seri Begawan BA1710, Brunei'],
-      ['\ud83d\udcde','+673 224 2424 (RIPAS)  |  +673 334 2424 (KB)','Walk-ins welcome \u2014 no appointment needed'],
-      ['\ud83d\udd50','Mon\u2013Thu & Sat: 7:45am \u2013 4:30pm','Fri: 7:45\u201311:30am  |  2:00\u20134:30pm'],
-      ['\ud83d\udcf8','Follow @bloodbankbrunei','Instagram \u00b7 Facebook \u00b7 Updates & mobile drives'],
-    ];
-    var cy2=S(100,W);
-    var cw=W-S(76,W),cx2=S(38,W),ch=isV?S(106,W):S(94,W),gap=S(11,W);
-    rows.forEach(function(row){
-      rr(ctx,cx2,cy2,cw,ch,S(11,W),'#161616','#262626',S(1.5,W));
-      rr(ctx,cx2+S(10,W),cy2+S(14,W),S(62,W),S(62,W),S(9,W),'#222');
-      ctx.font=S(29,W)+'px serif';ctx.textAlign='center';
-      ctx.fillText(row[0],cx2+S(41,W),cy2+S(53,W));
-      ctx.textAlign='left';
-      ctx.font='700 '+S(21,W)+'px "Barlow Condensed",sans-serif';
-      ctx.fillStyle='#ddd';ctx.fillText(row[1],cx2+S(84,W),cy2+S(40,W));
-      ctx.font='400 '+S(18,W)+'px "Barlow Condensed",sans-serif';
-      ctx.fillStyle='#666';ctx.fillText(row[2],cx2+S(84,W),cy2+S(65,W));
-      cy2+=ch+gap;
+      var suffix = currentMode==='single'? '_'+selectedType.replace('−','-') : '_all';
+      var a=document.createElement('a');
+      a.download='bloodbank_ripas'+suffix+'_'+currentFmt+'.png';
+      a.href=fc.toDataURL('image/png'); a.click();
+      hint.textContent='Saved ✓ ('+a.download+')';
+    })
+    .catch(function(){ hint.textContent='Long-press poster → Save Image'; })
+    .finally(function(){
+      if (currentFmt==='square') {
+        inner.style.transform=origT; inner.style.width=origW;
+        poster.style.overflow=origO; poster.style.aspectRatio=origA;
+      }
+      poster.classList.add('animate');
     });
-
-    // CTA blink
-    if(Math.floor(sub*7)%2===0){
-      var ctw=S(450,W),cth=S(56,W),ctxPos=(W-ctw)/2;
-      rr(ctx,ctxPos,cy2+S(8,W),ctw,cth,S(9,W),'#E01020');
-      ctx.textAlign='center';
-      ctx.font='normal '+S(28,W)+'px "Bebas Neue",sans-serif';
-      ctx.fillStyle='#fff';ctx.fillText('DONATE TODAY \u00b7 SAVE 3 LIVES',W/2,cy2+S(43,W));
-    }
-  }
-
-  // ─── TICKER (always) ─────────────────────────────────────────────
-  var tkH=S(44,W),tkY=H-tkH;
-  ctx.fillStyle='#E01020';ctx.fillRect(0,tkY,W,tkH);
-  var msg='\ud83e\ude78 '+bt.type+' DONORS URGENTLY NEEDED  \u2022  +673 224 2424  \u2022  RIPAS HOSPITAL BSB  \u2022  @bloodbankbrunei  \u2022  ';
-  ctx.font='700 '+S(19,W)+'px "Barlow Condensed",sans-serif';
-  ctx.textAlign='left';ctx.fillStyle='#fff';
-  var mw=ctx.measureText(msg).width;
-  var xOff=(t*mw*1.5)%mw;
-  ctx.fillText(msg+msg,W-xOff-mw,tkY+S(29,W));
-
-  // top bars
-  ctx.fillStyle='#E01020';ctx.fillRect(0,0,W,S(8,W));
-  ctx.fillStyle='#FFD700';ctx.fillRect(0,S(8,W),W,S(3,W));
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// LIVE PREVIEW
-// ═══════════════════════════════════════════════════════════════════════
-function startPreview(){
-  var canvas=document.getElementById('previewCanvas');
-  var fmt=selFmt;
-  var maxW=330,maxH=480;
-  var pw,ph;
-  if(fmt.h/fmt.w>maxH/maxW){ph=maxH;pw=Math.round(ph*fmt.w/fmt.h);}
-  else{pw=maxW;ph=Math.round(pw*fmt.h/fmt.w);}
-  canvas.width=pw;canvas.height=ph;
-  document.getElementById('prevWrap').style.display='block';
-  document.getElementById('prevLabel').textContent='Live Preview \u2014 '+fmt.name+' ('+fmt.sub+')';
-  if(animHandle)cancelAnimationFrame(animHandle);
-  var start=null;
-  function loop(ts){
-    if(!start)start=ts;
-    var t=((ts-start)%5000)/5000;
-    drawFrame(canvas.getContext('2d'),selType,t,pw,ph);
-    animHandle=requestAnimationFrame(loop);
-  }
-  animHandle=requestAnimationFrame(loop);
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// GIF GENERATION  (chunked to avoid UI freeze)
-// ═══════════════════════════════════════════════════════════════════════
-document.getElementById('genBtn').onclick=generateGIF;
-
-function generateGIF(){
-  if(!selType||!selFmt)return;
-  if(animHandle){cancelAnimationFrame(animHandle);animHandle=null;}
-
-  var btn=document.getElementById('genBtn');
-  var bar=document.getElementById('pbar');
-  var status=document.getElementById('statusMsg');
-  btn.disabled=true;bar.style.width='0%';status.textContent='Rendering frames\u2026';
-  document.getElementById('dlBtn').style.display='none';
-  gifURL=null;
-
-  var fmt=selFmt;
-  // render at half resolution: keeps file size 3-6 MB but still sharp on mobile
-  var GW=Math.round(fmt.w/2),GH=Math.round(fmt.h/2);
-  var FPS=10,SECS=5,NFRAMES=FPS*SECS;
-  var DELAY=Math.round(100/FPS); // centiseconds per frame
-
-  var off=document.createElement('canvas');
-  off.width=GW;off.height=GH;
-  var octx=off.getContext('2d');
-
-  var encoder=new window.GIFEncoder(GW,GH,DELAY);
-  var fi=0;
-
-  function renderChunk(){
-    var CHUNK=2;
-    for(var c=0;c<CHUNK&&fi<NFRAMES;c++,fi++){
-      var t=fi/NFRAMES;
-      drawFrame(octx,selType,t,GW,GH);
-      encoder.addFrame(octx.getImageData(0,0,GW,GH));
-    }
-    bar.style.width=Math.round(fi/NFRAMES*80)+'%';
-    status.textContent='Rendering frames\u2026 '+fi+' / '+NFRAMES;
-    if(fi<NFRAMES){setTimeout(renderChunk,0);}
-    else{encodeGIF();}
-  }
-
-  function encodeGIF(){
-    status.textContent='Encoding GIF\u2026 please wait';
-    bar.style.width='82%';
-    setTimeout(function(){
-      var bytes=encoder.encode();
-      var blob=new Blob([bytes],{type:'image/gif'});
-      gifURL=URL.createObjectURL(blob);
-      var mb=(bytes.length/1024/1024).toFixed(1);
-      bar.style.width='100%';
-      status.textContent='\u2705 Done! '+mb+' MB \u2014 ready to download';
-      btn.disabled=false;
-      setTimeout(function(){bar.style.width='0%';},900);
-
-      var dl=document.getElementById('dlBtn');
-      dl.style.display='block';
-      dl.onclick=function(){
-        var a=document.createElement('a');
-        a.href=gifURL;
-        a.download='blood_donor_'+selType.type.replace('\u2212','-').replace('+','p')+'_'+fmt.id+'.gif';
-        a.click();
-      };
-      startPreview();
-    },40);
-  }
-
-  renderChunk();
-}
+window.addEventListener('resize',function(){ if(currentFmt==='square') applySquareScale(); });
 </script>
 
 </body>
