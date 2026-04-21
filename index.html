@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🩸 Blood Donor Post Generator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red:#E01020; --crimson:#C0001A; --gold:#FFD700;
+  --bg:#0d0d0d; --card:#161616; --border:#2a2a2a;
+  --white:#ffffff; --gray:#999; --light:#1e1e1e;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--white);font-family:'Barlow',sans-serif;min-height:100vh}
+
+/* ── HEADER ── */
+header{background:var(–red);padding:14px 20px;display:flex;align-items:center;gap:12px;border-bottom:3px solid var(–gold)}
+header h1{font-family:‘Bebas Neue’,sans-serif;font-size:26px;letter-spacing:2px}
+header span{font-size:11px;color:rgba(255,255,255,.7);letter-spacing:2px;text-transform:uppercase;margin-left:auto}
+
+/* ── LAYOUT ── */
+.app{display:grid;grid-template-columns:340px 1fr;min-height:calc(100vh - 59px);gap:0}
+@media(max-width:800px){.app{grid-template-columns:1fr;grid-template-rows:auto 1fr}}
+
+/* ── SIDEBAR ── */
+.sidebar{background:var(–card);border-right:1px solid var(–border);padding:24px 20px;overflow-y:auto}
+.section-title{font-family:‘Barlow Condensed’,sans-serif;font-size:11px;letter-spacing:4px;color:var(–gold);text-transform:uppercase;margin-bottom:12px;margin-top:24px}
+.section-title:first-child{margin-top:0}
+
+/* blood type grid */
+.bt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px}
+.bt-btn{background:var(–light);border:2px solid var(–border);border-radius:10px;padding:12px 6px;text-align:center;cursor:pointer;transition:.2s all;position:relative}
+.bt-btn:hover{border-color:#555;transform:translateY(-2px)}
+.bt-btn.selected{border-color:var(–red);background:rgba(224,16,32,.12)}
+.bt-btn.selected.critical-type{border-color:var(–gold);background:rgba(255,215,0,.08)}
+.bt-type{font-family:‘Bebas Neue’,sans-serif;font-size:30px;line-height:1;color:var(–red)}
+.bt-btn.critical-type .bt-type{color:var(–gold)}
+.bt-label{font-size:10px;letter-spacing:1px;color:var(–gray);text-transform:uppercase;margin-top:3px}
+.bt-urgency{position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%}
+.dot-critical{background:var(–gold)}
+.dot-urgent{background:var(–red)}
+.dot-needed{background:#555}
+
+/* format picker */
+.fmt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.fmt-btn{background:var(–light);border:2px solid var(–border);border-radius:10px;padding:10px 6px;cursor:pointer;transition:.2s all;text-align:center}
+.fmt-btn:hover{border-color:#555}
+.fmt-btn.selected{border-color:var(–gold);background:rgba(255,215,0,.06)}
+.fmt-icon{margin:0 auto 6px;background:#222;border-radius:4px;border:1px solid #333}
+.fmt-name{font-family:‘Barlow Condensed’,sans-serif;font-weight:700;font-size:13px;letter-spacing:1px}
+.fmt-size{font-size:10px;color:var(–gray)}
+
+/* reason card */
+.reason-card{background:var(–light);border:1px solid var(–border);border-radius:10px;padding:14px;margin-bottom:6px}
+.reason-card .type-big{font-family:‘Bebas Neue’,sans-serif;font-size:42px;color:var(–red);line-height:1}
+.reason-card.critical-card .type-big{color:var(–gold)}
+.reason-card .urgency-pill{display:inline-block;font-family:‘Barlow Condensed’,sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;padding:3px 10px;border-radius:20px;margin:4px 0 8px}
+.pill-critical{background:rgba(255,215,0,.15);color:var(–gold);border:1px solid rgba(255,215,0,.3)}
+.pill-urgent{background:rgba(224,16,32,.15);color:#ff6060;border:1px solid rgba(224,16,32,.3)}
+.pill-needed{background:#222;color:var(–gray);border:1px solid #333}
+.reason-text{font-size:13px;color:#bbb;line-height:1.5}
+
+/* generate button */
+.gen-btn{width:100%;background:var(–red);color:#fff;border:none;border-radius:10px;padding:15px;font-family:‘Bebas Neue’,sans-serif;font-size:22px;letter-spacing:3px;cursor:pointer;transition:.2s;margin-top:20px;position:relative;overflow:hidden}
+.gen-btn:hover:not(:disabled){background:#ff1a2e;transform:scale(1.02)}
+.gen-btn:disabled{opacity:.5;cursor:not-allowed}
+.progress-bar{position:absolute;bottom:0;left:0;height:3px;background:var(–gold);transition:width .2s;width:0}
+
+/* ── PREVIEW AREA ── */
+.preview-area{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;gap:20px;background:repeating-conic-gradient(#1a1a1a 0% 25%,#141414 0% 50%) 0 0/20px 20px}
+.preview-wrap{position:relative;border:2px solid var(–border);border-radius:4px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+#previewCanvas{display:block;max-width:100%;max-height:60vh;object-fit:contain}
+.preview-label{font-family:‘Barlow Condensed’,sans-serif;font-size:12px;letter-spacing:3px;color:#555;text-transform:uppercase}
+.dl-btn{background:var(–gold);color:#000;border:none;border-radius:8px;padding:12px 28px;font-family:‘Bebas Neue’,sans-serif;font-size:20px;letter-spacing:2px;cursor:pointer;transition:.15s;display:none}
+.dl-btn:hover{background:#ffe840;transform:scale(1.04)}
+.status-msg{font-family:‘Barlow Condensed’,sans-serif;font-size:14px;letter-spacing:2px;color:var(–gray);text-align:center}
+</style>
+
+</head>
+<body>
+
+<header>
+  <span style="font-size:22px">🩸</span>
+  <h1>Blood Donor Post Generator</h1>
+  <span>Brunei National Blood Centre</span>
+</header>
+
+<div class="app">
+
+<!-- ══ SIDEBAR ══════════════════════════════════════════════════════ -->
+
+<div class="sidebar">
+
+  <p class="section-title">① Select Blood Type</p>
+  <div class="bt-grid" id="btGrid"></div>
+
+  <div class="reason-card" id="reasonCard" style="margin-top:14px">
+    <div style="color:#444;font-size:13px;text-align:center;padding:10px 0">Select a blood type above</div>
+  </div>
+
+  <p class="section-title">② Choose Format</p>
+  <div class="fmt-grid" id="fmtGrid"></div>
+
+  <button class="gen-btn" id="genBtn" disabled>
+    ⚡ GENERATE GIF
+    <div class="progress-bar" id="progressBar"></div>
+  </button>
+
+</div>
+
+<!-- ══ PREVIEW ══════════════════════════════════════════════════════ -->
+
+<div class="preview-area">
+  <p class="preview-label" id="previewLabel">Configure options to generate</p>
+  <div class="preview-wrap" id="previewWrap" style="display:none">
+    <canvas id="previewCanvas"></canvas>
+  </div>
+  <p class="status-msg" id="statusMsg"></p>
+  <button class="dl-btn" id="dlBtn">⬇ DOWNLOAD GIF</button>
+</div>
+
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────
+const BLOOD_TYPES = [
+  { type:'O−',  urgency:'CRITICAL', color:'#FFD700', reason:'Universal emergency donor. Used in trauma & surgery with no time for type-matching. Stocks depleted within 24 hrs.',        donate:'Compatible with ALL blood types. Only ~7% of people have this type.' },
+  { type:'AB−', urgency:'CRITICAL', color:'#FFD700', reason:'Rarest blood type (~1% of population). Universal plasma & platelet donor. Critically low with very few eligible donors.',   donate:'Can donate plasma to ALL patients. Urgently needed.' },
+  { type:'B−',  urgency:'URGENT',   color:'#E01020', reason:'High demand for thalassaemia patients needing frequent transfusions. Very few B− donors available nationally.',              donate:'Only ~2% of the population is B−. Your donation is rare & vital.' },
+  { type:'A−',  urgency:'URGENT',   color:'#E01020', reason:'Needed for oncology patients undergoing chemotherapy. Cannot be substituted. Below safe 3-day buffer level.',                donate:'A− donors can help A− and O− patients during chemotherapy.' },
+  { type:'O+',  urgency:'NEEDED',   color:'#ffffff', reason:'Most common type, highest consumption. Maternity & surgical wards running on short reserves. Always in demand.',              donate:'Most common type. O+ can donate to all positive blood types.' },
+  { type:'B+',  urgency:'NEEDED',   color:'#ffffff', reason:'Required for dialysis patients and post-cardiac surgery recovery. Regional transfers suspended due to shortages.',            donate:'B+ donors help B+, AB+ patients in surgery and dialysis wards.' },
+  { type:'A+',  urgency:'NEEDED',   color:'#ffffff', reason:'Moderate shortage. In demand for general surgeries and accident victims. Stocks below the recommended 5-day buffer.',         donate:'A+ is the 2nd most common type. Help replenish general stocks.' },
+  { type:'AB+', urgency:'NEEDED',   color:'#ffffff', reason:'Universal recipient. AB+ whole blood needed for trauma surgery pre-op reserves. All donations welcome.',                       donate:'AB+ can receive from any blood type. Whole blood donations vital.' },
+];
+
+const FORMATS = [
+  { id:'square',  name:'IG Post',        sub:'1080×1080',  w:1080, h:1080, icon_w:40, icon_h:40 },
+  { id:'story',   name:'WA Status',      sub:'1080×1920',  w:1080, h:1920, icon_w:28, icon_h:50 },
+  { id:'reel',    name:'IG Reel',        sub:'1080×1920',  w:1080, h:1920, icon_w:28, icon_h:50 },
+];
+
+let selectedType = null, selectedFmt = FORMATS[0], gifBlob = null;
+let animHandle = null, animFrame = 0;
+
+// ── BUILD UI ──────────────────────────────────────────────────────────
+const btGrid = document.getElementById('btGrid');
+BLOOD_TYPES.forEach(bt => {
+  const isCrit = bt.urgency==='CRITICAL';
+  const isUrg  = bt.urgency==='URGENT';
+  const div = document.createElement('div');
+  div.className = 'bt-btn' + (isCrit?' critical-type':'');
+  div.innerHTML = `
+    <div class="bt-urgency dot-${isCrit?'critical':isUrg?'urgent':'needed'}"></div>
+    <div class="bt-type">${bt.type}</div>
+    <div class="bt-label">${bt.urgency}</div>`;
+  div.onclick = () => selectType(bt, div);
+  btGrid.appendChild(div);
+});
+
+const fmtGrid = document.getElementById('fmtGrid');
+FORMATS.forEach(fmt => {
+  const div = document.createElement('div');
+  div.className = 'fmt-btn' + (fmt===selectedFmt?' selected':'');
+  div.innerHTML = `
+    <div class="fmt-icon" style="width:${fmt.icon_w}px;height:${fmt.icon_h}px"></div>
+    <div class="fmt-name">${fmt.name}</div>
+    <div class="fmt-size">${fmt.sub}</div>`;
+  div.onclick = () => selectFmt(fmt, div);
+  fmtGrid.appendChild(div);
+});
+
+function selectType(bt, el) {
+  selectedType = bt;
+  document.querySelectorAll('.bt-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  const isCrit = bt.urgency==='CRITICAL';
+  const isUrg  = bt.urgency==='URGENT';
+  const pillCls = isCrit?'pill-critical':isUrg?'pill-urgent':'pill-needed';
+  document.getElementById('reasonCard').className = 'reason-card'+(isCrit?' critical-card':'');
+  document.getElementById('reasonCard').innerHTML = `
+    <div class="type-big">${bt.type}</div>
+    <span class="urgency-pill ${pillCls}">${bt.urgency}</span>
+    <p class="reason-text">${bt.reason}</p>
+    <p class="reason-text" style="margin-top:8px;color:#777">${bt.donate}</p>`;
+  document.getElementById('genBtn').disabled = false;
+  startPreviewAnimation();
+}
+
+function selectFmt(fmt, el) {
+  selectedFmt = fmt;
+  document.querySelectorAll('.fmt-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  if(selectedType) startPreviewAnimation();
+}
+
+// ── CANVAS HELPERS ────────────────────────────────────────────────────
+function loadFont(ctx, size, bold=false) {
+  ctx.font = `${bold?'900':'600'} ${size}px 'Barlow Condensed', sans-serif`;
+}
+function bebasFont(ctx, size) {
+  ctx.font = `normal ${size}px 'Bebas Neue', sans-serif`;
+}
+
+function drawRoundRect(ctx, x,y,w,h,r,fill,stroke,sw=2){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);
+  ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();
+  if(fill){ctx.fillStyle=fill;ctx.fill();}
+  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=sw;ctx.stroke();}
+}
+
+function centeredText(ctx, txt, y, color='#fff', shadow=null){
+  if(shadow){ctx.fillStyle=shadow;ctx.fillText(txt,(ctx.canvas.width-ctx.measureText(txt).width)/2+2,y+2);}
+  ctx.fillStyle=color;
+  ctx.fillText(txt,(ctx.canvas.width-ctx.measureText(txt).width)/2,y);
+}
+
+function wrapText(ctx, txt, x, y, maxW, lineH){
+  const words=txt.split(' ');let line='';const lines=[];
+  words.forEach(w=>{
+    const test=line?line+' '+w:w;
+    if(ctx.measureText(test).width>maxW&&line){lines.push(line);line=w;}
+    else line=test;
+  });lines.push(line);
+  lines.forEach((l,i)=>{ctx.fillText(l,x,y+i*lineH);});
+  return lines.length*lineH;
+}
+
+// ── DRAW ONE FRAME ────────────────────────────────────────────────────
+function drawFrame(canvas, bt, fmt, tick /* 0..1 */, phase /* 'intro'|'main'|'info' */, subT){
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const isVertical = H > W;
+  const scale = W / 1080;
+  const S = n => Math.round(n * scale);
+
+  // bg
+  ctx.fillStyle = '#0d0d0d'; ctx.fillRect(0,0,W,H);
+
+  // subtle radial
+  const grd = ctx.createRadialGradient(W/2,0,0,W/2,H*0.4,H*0.8);
+  grd.addColorStop(0,'rgba(180,0,20,0.12)'); grd.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=grd; ctx.fillRect(0,0,W,H);
+
+  const isCrit = bt.urgency==='CRITICAL';
+  const accentColor = isCrit ? '#FFD700' : bt.urgency==='URGENT' ? '#E01020' : '#ffffff';
+
+  // top bar
+  ctx.fillStyle='#E01020'; ctx.fillRect(0,0,W,S(10));
+
+  // gold accent line
+  ctx.fillStyle='#FFD700'; ctx.fillRect(0,S(10),W,S(4));
+
+  const ease = t => 1-Math.pow(1-Math.min(1,t),3);
+
+  if(phase==='intro'){
+    const e = ease(subT*3);
+    // pulse ring
+    const cx=W/2, cy=isVertical?H*0.28:H*0.32;
+    const ringR = S(80+40*subT);
+    ctx.beginPath();ctx.arc(cx,cy,ringR,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(224,16,32,${Math.max(0,0.8-subT*0.9)})`;
+    ctx.lineWidth=S(3);ctx.stroke();
+
+    // blood drop
+    const br=S(62);
+    ctx.fillStyle='#C0001A';
+    ctx.beginPath();ctx.arc(cx,cy,br,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.moveTo(cx,cy-br-S(24));
+    ctx.quadraticCurveTo(cx+S(32),cy-S(10),cx+br*0.6,cy+S(20));
+    ctx.quadraticCurveTo(cx,cy+br+S(8),cx-br*0.6,cy+S(20));
+    ctx.quadraticCurveTo(cx-S(32),cy-S(10),cx,cy-br-S(24));
+    ctx.fillStyle='#C0001A';ctx.fill();
+
+    // URGENT badge
+    const bw=S(260),bh=S(44),bx=(W-bw)/2,by=isVertical?H*0.44:H*0.5;
+    drawRoundRect(ctx,bx,by,bw,bh,S(6),'#E01020');
+    bebasFont(ctx,S(26));
+    ctx.letterSpacing=S(4)+'px';
+    centeredText(ctx,'⚠  URGENT CALLOUT',by+S(30),'#fff');
+    ctx.letterSpacing='0px';
+
+    // title
+    const ty=by+bh+S(18);
+    bebasFont(ctx,S(isVertical?90:72));
+    centeredText(ctx,'WE NEED',ty+S(0),'#fff');
+    centeredText(ctx,'YOUR BLOOD',ty+S(isVertical?95:80),'#E01020');
+
+    // sub
+    loadFont(ctx,S(22));
+    centeredText(ctx,'BRUNEI NATIONAL BLOOD CENTRE',ty+S(isVertical?175:155),'#777');
+
+    // bottom ticker preview
+    const tickY=H-S(50);
+    ctx.fillStyle='#E01020'; ctx.fillRect(0,tickY,W,S(50));
+    loadFont(ctx,S(22),true);
+    const msg='CALL +673 224 2424  •  WALK-INS WELCOME  •  DONATE TODAY';
+    ctx.fillStyle='#fff';
+    const tx2=((tick*W*2)%(ctx.measureText(msg).width+W));
+    ctx.fillText(msg,W-tx2,tickY+S(33));
+  }
+
+  else if(phase==='main'){
+    const e=ease(subT*4);
+    const yBase = isVertical ? H*0.12 : H*0.08;
+
+    // blood type giant
+    bebasFont(ctx,S(isVertical?200:160));
+    ctx.shadowColor=accentColor; ctx.shadowBlur=S(40);
+    centeredText(ctx,bt.type,S(isVertical?340:280)+yBase,accentColor);
+    ctx.shadowBlur=0;
+
+    // urgency pill
+    const pw=S(240),ph=S(50),px=(W-pw)/2,py=isVertical?H*0.36:H*0.45;
+    const pillCol=isCrit?'rgba(255,215,0,0.15)':bt.urgency==='URGENT'?'rgba(224,16,32,0.15)':'rgba(255,255,255,0.06)';
+    const pillBorder=isCrit?'rgba(255,215,0,0.5)':bt.urgency==='URGENT'?'rgba(224,16,32,0.5)':'rgba(255,255,255,0.2)';
+    drawRoundRect(ctx,px,py,pw,ph,S(25),pillCol,pillBorder,S(2));
+    loadFont(ctx,S(22),true);
+    centeredText(ctx,bt.urgency,py+S(33),accentColor);
+
+    // reason
+    loadFont(ctx,S(28));
+    ctx.fillStyle='#ccc';
+    const rw=W-S(120);
+    const rh=wrapText(ctx,bt.reason,S(60),py+S(80),rw,S(40));
+
+    // donate fact
+    loadFont(ctx,S(24));
+    ctx.fillStyle='#777';
+    wrapText(ctx,bt.donate,S(60),py+S(100)+rh,rw,S(36));
+
+    // stock bar
+    const barY=isVertical?H*0.78:H*0.74, barX=S(60), barW=W-S(120);
+    const pct=isCrit?0.08:bt.urgency==='URGENT'?0.22:0.48;
+    drawRoundRect(ctx,barX,barY,barW,S(16),S(8),'#1e1e1e');
+    const fill=barW*pct*e;
+    if(fill>S(16)) drawRoundRect(ctx,barX,barY,fill,S(16),S(8),accentColor);
+    loadFont(ctx,S(20));
+    ctx.fillStyle='#555';
+    ctx.fillText('STOCK LEVEL',barX,barY+S(38));
+    ctx.fillStyle=accentColor;
+    ctx.fillText(bt.urgency,barX+barW-ctx.measureText(bt.urgency).width,barY+S(38));
+
+    // bottom
+    const tickY=H-S(50);
+    ctx.fillStyle='#E01020'; ctx.fillRect(0,tickY,W,S(50));
+    loadFont(ctx,S(21),true);
+    const msg2=`🩸 ${bt.type} DONORS NEEDED  •  +673 224 2424  •  RIPAS HOSPITAL BSB  •  @bloodbankbrunei  •  `;
+    const mx=(tick*(ctx.measureText(msg2).width+W))%(ctx.measureText(msg2).width+W);
+    ctx.fillStyle='#fff';ctx.fillText(msg2+msg2,W-mx,tickY+S(34));
+  }
+
+  else if(phase==='info'){
+    const yOff=isVertical?0.06:0.03;
+    bebasFont(ctx,S(52));
+    centeredText(ctx,'BRUNEI BLOOD BANK',H*yOff+S(55),'#fff');
+    loadFont(ctx,S(22));
+    centeredText(ctx,'HOW TO DONATE',H*yOff+S(18),'#777');
+
+    const cardX=S(50),cardW=W-S(100),gap=S(16);
+    let cy2=H*(yOff+0.12);
+
+    const infoRows=[
+      ['📍','Location','RIPAS Hospital, Jalan PA Muhtadee Billah, BSB BA1710'],
+      ['📞','Call Us','+673 224 2424  (RIPAS)   |   +673 334 2424  (KB)'],
+      ['🕐','Hours','Mon–Thu & Sat: 7:45am–4:30pm  |  Fri: 7:45–11:30am, 2–4:30pm'],
+      ['📸','Follow','@bloodbankbrunei  on Instagram & Facebook'],
+      ['✉','Email','bloodbank@moh.gov.bn'],
+    ];
+
+    infoRows.forEach(([icon,label,val],i)=>{
+      const ch=isVertical?S(100):S(88);
+      drawRoundRect(ctx,cardX,cy2,cardW,ch,S(12),'#161616','#252525',S(1));
+      // icon bg
+      drawRoundRect(ctx,cardX+S(12),cy2+S(16),S(60),S(60),S(10),'#222');
+      ctx.font=`${S(28)}px serif`; ctx.fillText(icon,cardX+S(22),cy2+S(56));
+      loadFont(ctx,S(20));ctx.fillStyle='#666';ctx.fillText(label.toUpperCase(),cardX+S(86),cy2+S(34));
+      loadFont(ctx,S(24),true);ctx.fillStyle='#ddd';
+      const vw=cardW-S(100);
+      wrapText(ctx,val,cardX+S(86),cy2+S(62),vw,S(28));
+      cy2+=ch+gap;
+    });
+
+    // CTA blink
+    if(Math.floor(tick*6)%2===0){
+      const ctaW=S(420),ctaH=S(60),ctaX=(W-ctaW)/2;
+      const ctaY=cy2+S(10);
+      drawRoundRect(ctx,ctaX,ctaY,ctaW,ctaH,S(10),'#E01020');
+      bebasFont(ctx,S(28));
+      centeredText(ctx,'DONATE TODAY · SAVE 3 LIVES',ctaY+S(40),'#fff');
+    }
+
+    ctx.fillStyle='#E01020'; ctx.fillRect(0,H-S(14),W,S(14));
+  }
+
+  // top bar redraw over everything
+  ctx.fillStyle='#E01020'; ctx.fillRect(0,0,W,S(8));
+  ctx.fillStyle='#FFD700'; ctx.fillRect(0,S(8),W,S(3));
+}
+
+// ── LIVE PREVIEW ANIMATION ────────────────────────────────────────────
+function startPreviewAnimation(){
+  if(!selectedType) return;
+  const canvas=document.getElementById('previewCanvas');
+  const fmt=selectedFmt;
+  // scale for preview (max 360px wide)
+  const maxW=360, maxH=window.innerWidth>800?520:320;
+  let pw,ph;
+  if(fmt.h/fmt.w > maxH/maxW){ ph=maxH; pw=Math.round(ph*fmt.w/fmt.h); }
+  else{ pw=maxW; ph=Math.round(pw*fmt.h/fmt.w); }
+  canvas.width=pw; canvas.height=ph;
+  document.getElementById('previewWrap').style.display='block';
+  document.getElementById('previewLabel').textContent=`Preview — ${fmt.name} (${fmt.sub})`;
+
+  if(animHandle) cancelAnimationFrame(animHandle);
+  let start=null;
+  const TOTAL=5000; // ms total loop
+  function loop(ts){
+    if(!start) start=ts;
+    const t=((ts-start)%TOTAL)/TOTAL;
+    let phase,subT;
+    if(t<0.18){ phase='intro'; subT=t/0.18; }
+    else if(t<0.62){ phase='main'; subT=(t-0.18)/0.44; }
+    else{ phase='info'; subT=(t-0.62)/0.38; }
+    drawFrame(canvas,selectedType,fmt,t,phase,subT);
+    animHandle=requestAnimationFrame(loop);
+  }
+  animHandle=requestAnimationFrame(loop);
+  document.getElementById('dlBtn').style.display='none';
+  document.getElementById('statusMsg').textContent='';
+}
+
+// ── GIF GENERATION ────────────────────────────────────────────────────
+document.getElementById('genBtn').onclick = generateGIF;
+
+function generateGIF(){
+  if(!selectedType||!selectedFmt) return;
+  if(animHandle){cancelAnimationFrame(animHandle);animHandle=null;}
+
+  const btn=document.getElementById('genBtn');
+  const bar=document.getElementById('progressBar');
+  const status=document.getElementById('statusMsg');
+  btn.disabled=true;
+  status.textContent='Rendering frames…';
+  document.getElementById('dlBtn').style.display='none';
+
+  const fmt=selectedFmt;
+  // GIF at half resolution to keep file size manageable but still HD
+  const GW=Math.round(fmt.w/2), GH=Math.round(fmt.h/2);
+
+  const offCanvas=document.createElement('canvas');
+  offCanvas.width=GW; offCanvas.height=GH;
+
+  const FPS=15, TOTAL_SEC=5;
+  const NFRAMES=FPS*TOTAL_SEC;
+
+  // Use gif.js
+  const gif=new GIF({workers:2,quality:8,width:GW,height:GH,workerScript:'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js'});
+
+  let fi=0;
+  function addNextFrame(){
+    if(fi>=NFRAMES){
+      status.textContent='Encoding GIF…';
+      gif.render();
+      return;
+    }
+    const t=(fi/NFRAMES);
+    let phase,subT;
+    if(t<0.18){ phase='intro'; subT=t/0.18; }
+    else if(t<0.62){ phase='main'; subT=(t-0.18)/0.44; }
+    else{ phase='info'; subT=(t-0.62)/0.38; }
+    drawFrame(offCanvas,selectedType,fmt,t,phase,subT);
+    gif.addFrame(offCanvas,{copy:true,delay:Math.round(1000/FPS)});
+    bar.style.width=(fi/NFRAMES*80)+'%';
+    fi++;
+    setTimeout(addNextFrame,0);
+  }
+
+  gif.on('progress',p=>{ bar.style.width=(80+p*20)+'%'; status.textContent=`Encoding… ${Math.round(p*100)}%`; });
+  gif.on('finished',blob=>{
+    gifBlob=blob;
+    bar.style.width='100%';
+    status.textContent='✅ GIF ready!';
+    btn.disabled=false;
+    setTimeout(()=>bar.style.width='0',600);
+
+    // show in preview
+    const url=URL.createObjectURL(blob);
+    const dlBtn=document.getElementById('dlBtn');
+    dlBtn.style.display='block';
+    dlBtn.onclick=()=>{
+      const a=document.createElement('a');
+      a.href=url;
+      a.download=`blood_donor_${selectedType.type.replace('−','-').replace('+','p')}_${fmt.id}.gif`;
+      a.click();
+    };
+
+    // show gif in canvas area (use img tag)
+    let existImg=document.getElementById('gifPreviewImg');
+    if(!existImg){ existImg=document.createElement('img'); existImg.id='gifPreviewImg'; existImg.style.cssText='max-width:100%;max-height:60vh;display:block'; document.getElementById('previewWrap').appendChild(existImg); }
+    existImg.src=url;
+    document.getElementById('previewCanvas').style.display='none';
+    existImg.style.display='block';
+
+    startPreviewAnimation(); // restart canvas preview
+    document.getElementById('previewCanvas').style.display='block';
+    existImg.style.display='none';
+  });
+
+  addNextFrame();
+}
+
+// init
+selectFmt(FORMATS[0], document.querySelectorAll('.fmt-btn')[0]);
+</script>
+
+</body>
+</html>
